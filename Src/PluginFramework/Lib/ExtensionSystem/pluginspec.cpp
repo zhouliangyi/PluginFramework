@@ -4,7 +4,6 @@
 #include <QFileInfo>
 #include <QJsonArray>
 
-
 namespace ExtensionSystem {
 namespace CONSTS
 {
@@ -35,6 +34,35 @@ const char ARGUMENT_PARAMETER[] = "Parameter";
 const char ARGUMENT_DESCRIPTION[] = "Description";
 
 }
+
+bool PluginDependency::operator==(const PluginDependency &other) const
+{
+    return name == other.name && version == other.version && type == other.type;
+}
+
+//static QString typeString(PluginDependency::Type type)
+//{
+//    switch (type) {
+//    case PluginDependency::Optional:
+//        return QString(", optional");
+//    case PluginDependency::Test:
+//        return QString(", test");
+//    case PluginDependency::Required:
+//    default:
+//        return QString();
+//    }
+//}
+
+//QString PluginDependency::toString() const
+//{
+//    return name + " (" + version + typeString(type) + ")";
+//}
+
+uint qHash(const PluginDependency &value)
+{
+    return qHash(value.name);
+}
+
 }
 
 ExtensionSystem::PluginSpec::PluginSpec()
@@ -80,7 +108,42 @@ bool ExtensionSystem::PluginSpec::read(const QString &fileName)
 
 bool ExtensionSystem::PluginSpec::resolveDependencies(const QList<ExtensionSystem::PluginSpec *> &specs)
 {
-    return false;
+//    QHash<PluginDependency, PluginSpec *> resolvedDependencies;
+//    // 遍历该插件所依赖的所有插件
+//    foreach (const PluginDependency &dep, dependencies)
+//    {
+//        bool findSpec = false;
+//        foreach (PluginSpec * const spec, specs)
+//        {
+//            // 寻找满足依赖条件的插件
+//            if(spec->provides(dep.name,dep.version))
+//            {
+//                // 将该插件的信息存入插件中
+//                resolvedDependencies.insert(dep,spec);
+//                findSpec = true;
+//            }
+//        }
+//        // 如果找不到依赖的插件 则解析失败
+//        if(!findSpec)
+//            return false;
+//    }
+//    dependencySpecs = resolvedDependencies;
+//    state = PluginSpec::Resolved;
+//    return true;
+    QHash<PluginDependency, PluginSpec *> resolvedDependencies;
+
+    foreach (const PluginDependency &dependency, dependencies) {
+        PluginSpec * const found = 0;
+        resolvedDependencies.insert(dependency, found);
+    }
+    if (hasError)
+        return false;
+
+    dependencySpecs = resolvedDependencies;
+
+    state = PluginSpec::Resolved;
+
+    return true;
 }
 
 bool ExtensionSystem::PluginSpec::provides(const QString &pluginName, const QString &version) const
