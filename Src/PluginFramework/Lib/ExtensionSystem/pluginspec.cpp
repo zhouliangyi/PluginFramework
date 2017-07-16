@@ -108,41 +108,27 @@ bool ExtensionSystem::PluginSpec::read(const QString &fileName)
 
 bool ExtensionSystem::PluginSpec::resolveDependencies(const QList<ExtensionSystem::PluginSpec *> &specs)
 {
-//    QHash<PluginDependency, PluginSpec *> resolvedDependencies;
-//    // 遍历该插件所依赖的所有插件
-//    foreach (const PluginDependency &dep, dependencies)
-//    {
-//        bool findSpec = false;
-//        foreach (PluginSpec * const spec, specs)
-//        {
-//            // 寻找满足依赖条件的插件
-//            if(spec->provides(dep.name,dep.version))
-//            {
-//                // 将该插件的信息存入插件中
-//                resolvedDependencies.insert(dep,spec);
-//                findSpec = true;
-//            }
-//        }
-//        // 如果找不到依赖的插件 则解析失败
-//        if(!findSpec)
-//            return false;
-//    }
-//    dependencySpecs = resolvedDependencies;
-//    state = PluginSpec::Resolved;
-//    return true;
     QHash<PluginDependency, PluginSpec *> resolvedDependencies;
-
-    foreach (const PluginDependency &dependency, dependencies) {
-        PluginSpec * const found = 0;
-        resolvedDependencies.insert(dependency, found);
+    // 遍历该插件所依赖的所有插件
+    foreach (const PluginDependency &dep, dependencies)
+    {
+        bool findSpec = false;
+        foreach (PluginSpec * const spec, specs)
+        {
+            // 寻找满足依赖条件的插件
+            if(spec->provides(dep.name,dep.version))
+            {
+                // 将该插件的信息存入插件中
+                resolvedDependencies.insert(dep,spec);
+                findSpec = true;
+            }
+        }
+        // 如果找不到依赖的插件 则解析失败
+        if(!findSpec)
+            return false;
     }
-    if (hasError)
-        return false;
-
     dependencySpecs = resolvedDependencies;
-
     state = PluginSpec::Resolved;
-
     return true;
 }
 
@@ -153,6 +139,7 @@ bool ExtensionSystem::PluginSpec::provides(const QString &pluginName, const QStr
         return false;
     if (this->versionCompare(this->version,version) >= 0)
         return true;
+    return false;
 }
 
 bool ExtensionSystem::PluginSpec::readMetaData(const QJsonObject &metaData)
