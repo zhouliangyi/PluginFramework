@@ -16,6 +16,7 @@ public:
 private Q_SLOTS:
     void initTestCase();
     void cleanupTestCase();
+
     void testCase1();
 
     void test_Initialize();
@@ -26,8 +27,16 @@ private Q_SLOTS:
 
     //////////////////////////////////////////////////////
     // 测试pluginSpe
+    // 版本比较
     void testPluginSpec_VersionCompare_data();
     void testPluginSpec_VersionCompare();
+
+    // 依赖项
+    void testPluginSpec_ResolveDepencies1();
+    void testPluginSpec_ResolveDepencies2();
+
+    // 读取函数
+    void testPluginSpec_read();
 
 };
 
@@ -116,6 +125,75 @@ void ExtensionSystemTestTest::testPluginSpec_VersionCompare()
     ExtensionSystem::PluginSpec pluginSpec;
 
     QCOMPARE(pluginSpec.versionCompare(version1,version2),compareResult);
+}
+
+void ExtensionSystemTestTest::testPluginSpec_ResolveDepencies1()
+{
+    ExtensionSystem::PluginSpec pluginSepc;
+
+    // 第一个依赖项
+    ExtensionSystem::PluginDependency dep;
+    dep.name = "core";
+    dep.version = "1.2.0";
+    dep.type = ExtensionSystem::PluginDependency::Required;
+
+    pluginSepc.dependencies.append(dep);
+
+    // 第二个依赖项
+    dep.name = "test";
+    dep.version = "1.3.0";
+    dep.type = ExtensionSystem::PluginDependency::Required;
+
+    QList<ExtensionSystem::PluginSpec*> pluginSepcList;
+    ExtensionSystem::PluginSpec* spec = new ExtensionSystem::PluginSpec();
+    spec->name = "core";
+    spec->version = "1.2.0";
+    pluginSepcList.append(spec);
+    spec = new ExtensionSystem::PluginSpec();
+    spec->name = "test";
+    spec->version = "1.3.0";
+    pluginSepcList.append(spec);
+
+    QVERIFY(pluginSepc.resolveDependencies(pluginSepcList));
+
+}
+
+void ExtensionSystemTestTest::testPluginSpec_ResolveDepencies2()
+{
+    ExtensionSystem::PluginSpec pluginSepc;
+
+    // 第一个依赖项
+    ExtensionSystem::PluginDependency dep;
+    dep.name = "core";
+    dep.version = "1.2.0";
+    dep.type = ExtensionSystem::PluginDependency::Required;
+
+    pluginSepc.dependencies.append(dep);
+
+    // 第二个依赖项
+    dep.name = "test";
+    dep.version = "1.3.0";
+    dep.type = ExtensionSystem::PluginDependency::Required;
+
+    QList<ExtensionSystem::PluginSpec*> pluginSepcList;
+    ExtensionSystem::PluginSpec* spec = new ExtensionSystem::PluginSpec();
+    spec->name = "core";
+    spec->version = "1.1.0";
+    pluginSepcList.append(spec);
+    spec = new ExtensionSystem::PluginSpec();
+    spec->name = "test";
+    spec->version = "1.3.0";
+    pluginSepcList.append(spec);
+
+    QVERIFY(!pluginSepc.resolveDependencies(pluginSepcList));
+}
+
+void ExtensionSystemTestTest::testPluginSpec_read()
+{
+    ExtensionSystem::PluginSpec pluginSepc;
+    QString fileName("E:\\3!Programming\\PluginFrameworkGit\\Src\\PluginFramework\\Test\\ExtensionSystemTest\\AutoTest4.dll");
+    bool readResult = pluginSepc.read(fileName);
+    QVERIFY(readResult);
 }
 
 

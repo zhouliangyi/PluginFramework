@@ -23,8 +23,9 @@ struct PluginDependency
     QString version;
     Type type;
     bool operator==(const PluginDependency &other) const;
-    QString toString() const;
+//    QString toString() const;
 };
+uint qHash(const ExtensionSystem::PluginDependency &value);
 
 class PluginSpec
 {
