@@ -156,6 +156,7 @@ bool ExtensionSystem::PluginSpec::loadLibrary()
    if(!loader.load())
    {
        hasError = true;
+       errorString = loader.errorString();
        return false;
    }
    // 获取插件中的对象 并判断是否有内容
@@ -170,6 +171,41 @@ bool ExtensionSystem::PluginSpec::loadLibrary()
    plugin=pluginObj;
    plugin->setPluginSpec(this);
 
+}
+
+bool ExtensionSystem::PluginSpec::initializePlugin()
+{
+    // 如果错误 则返回false
+    if (hasError) {
+        return false;
+    }
+    // 如果状态不是已加载则返回false
+    if (state != Loaded) {
+        if(state != Initialized)
+        {
+            hasError = true;
+            return false;
+        }
+        else
+        {
+            return true;
+        }
+    }
+    // 如果对应指针为空 则返回false
+    if(!plugin)
+    {
+        hasError = true;
+        return false;
+    }
+    // 如果初始化失败 则返回false
+    if(!plugin->initialize(arguments,errorString))
+    {
+        hasError = true;
+        return false;
+    }
+    // 初始化成功 设置插件当前状态，返回true
+    state = Initialized;
+    return true;
 }
 
 bool ExtensionSystem::PluginSpec::provides(const QString &pluginName, const QString &version) const

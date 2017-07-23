@@ -45,7 +45,9 @@ public:
     // 解析依赖项 给定一组插件，判断当前插件的依赖项是否齐全 如果齐全则将
     bool resolveDependencies(const QList<PluginSpec*> &specs);
 
+    // 加载插件
     bool loadLibrary();
+    // 初始化插件
     bool initializePlugin();
     bool initializeExtensions();
     bool delayedInitialize();

@@ -38,6 +38,9 @@ private Q_SLOTS:
     // 读取函数
     void testPluginSpec_read();
 
+    // 解析函数
+    void testPluginSpec_load();
+
 };
 
 ExtensionSystemTestTest::ExtensionSystemTestTest()
@@ -194,6 +197,19 @@ void ExtensionSystemTestTest::testPluginSpec_read()
     QString fileName = QFINDTESTDATA("AutoTest4.dll");
     bool readResult = pluginSepc.read(fileName);
     QVERIFY(readResult);
+}
+
+void ExtensionSystemTestTest::testPluginSpec_load()
+{
+    ExtensionSystem::PluginSpec pluginSepc;
+    QString fileName = QFINDTESTDATA("Core4.dll");
+    bool readResult = pluginSepc.read(fileName);
+    QVERIFY(readResult);
+
+    pluginSepc.state = ExtensionSystem::PluginSpec::Resolved;
+    bool loadResult = pluginSepc.loadLibrary();
+    qDebug()<<pluginSepc.errorString;
+    QVERIFY(loadResult);
 }
 
 
