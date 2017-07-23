@@ -191,7 +191,7 @@ void ExtensionSystemTestTest::testPluginSpec_ResolveDepencies2()
 void ExtensionSystemTestTest::testPluginSpec_read()
 {
     ExtensionSystem::PluginSpec pluginSepc;
-    QString fileName("E:\\3!Programming\\PluginFrameworkGit\\Src\\PluginFramework\\Test\\ExtensionSystemTest\\AutoTest4.dll");
+    QString fileName = QFINDTESTDATA("AutoTest4.dll");
     bool readResult = pluginSepc.read(fileName);
     QVERIFY(readResult);
 }
