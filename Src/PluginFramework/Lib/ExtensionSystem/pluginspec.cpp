@@ -1,5 +1,5 @@
 #include "pluginspec.h"
-
+#include "iplugin.h"
 
 #include <QFileInfo>
 #include <QJsonArray>
@@ -132,6 +132,46 @@ bool ExtensionSystem::PluginSpec::resolveDependencies(const QList<ExtensionSyste
     return true;
 }
 
+bool ExtensionSystem::PluginSpec::loadLibrary()
+{
+    // 如果插件加载有错则返回
+   if(hasError)
+       return false;
+   // 判断当前插件状态是否是已解析
+   if(state != Resolved)
+   {
+       // 如果当前已经是加载状态 则返回正确
+       if(state == Loaded)
+       {
+           return true;
+       }
+       // 如果当前不是加载状态，则返回失败
+       else
+       {
+           hasError = true;
+           return false;
+       }
+   }
+   // 判断插件加载是否成功
+   if(!loader.load())
+   {
+       hasError = true;
+       return false;
+   }
+   // 获取插件中的对象 并判断是否有内容
+   IPlugin* pluginObj = qobject_cast<IPlugin*>(loader.instance());
+   if(!pluginObj)
+   {
+       loader.unload();
+       return false;
+   }
+   // 加载成功后将插件状态设置为已加载，成员变量赋值
+   state = Loaded;
+   plugin=pluginObj;
+   plugin->setPluginSpec(this);
+
+}
+
 bool ExtensionSystem::PluginSpec::provides(const QString &pluginName, const QString &version) const
 {
     // 如果输入名称和当前插件名称不相同，返回false
@@ -183,49 +223,57 @@ bool ExtensionSystem::PluginSpec::readMetaData(const QJsonObject &metaData)
 
     // 试验版本
     value = pluginInfo.value(CONSTS::PLUGIN_EXPERIMENTAL);
-    if (value.isUndefined() || !value.isBool()) {
+    if (!value.isUndefined() && !value.isBool())
+    {
         return false;
     }
-    experimental = value.toBool();
+    experimental = value.toBool(false);
+
 
     // 提供者
     value = pluginInfo.value(CONSTS::VENDOR);
-    if (value.isUndefined() || !value.isString()) {
+    if (!value.isUndefined() && !value.isString()) {
         return false;
     }
     vendor = value.toString();
 
     // 版权
     value = pluginInfo.value(CONSTS::COPYRIGHT);
-    if (value.isUndefined() || !value.isString()) {
+    if (!value.isUndefined() && !value.isString()) {
         return false;
     }
     copyright = value.toString();
 
     // 许可
     value = pluginInfo.value(CONSTS::LICENSE);
-    if (value.isUndefined() || !value.isString()) {
+    if (!value.isUndefined() && !value.isArray()) {
         return false;
     }
-    license = value.toString();
+    QJsonArray licenseArray = value.toArray();
+    foreach (const QJsonValue v, licenseArray) {
+        if(!v.isString())
+            return false;
+        license += v.toString();
+    }
+//    license = value.toString();
 
     // 链接
     value = pluginInfo.value(CONSTS::URL);
-    if (value.isUndefined() || !value.isString()) {
+    if (!value.isUndefined() && !value.isString()) {
         return false;
     }
     url = value.toString();
 
     // 归类
     value = pluginInfo.value(CONSTS::CATEGORY);
-    if (value.isUndefined() || !value.isString()) {
+    if (!value.isUndefined() && !value.isString()) {
         return false;
     }
     category = value.toString();
 
     // 依赖项
     value = pluginInfo.value(QLatin1String(CONSTS::DEPENDENCIES));
-    if (value.isUndefined() || !value.isArray()) {
+    if (!value.isUndefined() && !value.isArray()) {
         return false;
     }
     // 依赖项是一个序列
@@ -239,20 +287,20 @@ bool ExtensionSystem::PluginSpec::readMetaData(const QJsonObject &metaData)
         PluginDependency dep;
         // 依赖项名称
         value = depencyObject.value(QLatin1String(CONSTS::DEPENDENCY_NAME));
-        if (value.isUndefined() || !value.isString()) {
+        if (!value.isUndefined() && !value.isString()) {
             return false;
         }
         dep.name = value.toString();
         // 依赖项版本
         value = depencyObject.value(QLatin1String(CONSTS::DEPENDENCY_VERSION));
-        if (value.isUndefined() || !value.isString()) {
+        if (!value.isUndefined() && !value.isString()) {
             return false;
         }
         dep.version = value.toString();
         // 依赖项类型 默认为需要
         dep.type = PluginDependency::Required;
         value = depencyObject.value(QLatin1String(CONSTS::DEPENDENCY_TYPE));
-        if (value.isUndefined() || !value.isString()) {
+        if (!value.isUndefined() && !value.isString()) {
             return false;
         }
         QString typeValue = value.toString();
@@ -263,7 +311,7 @@ bool ExtensionSystem::PluginSpec::readMetaData(const QJsonObject &metaData)
         } else if (typeValue.toLower() == QLatin1String(CONSTS::DEPENDENCY_TYPE_TEST)) {
             dep.type = PluginDependency::Test;
         } else {
-            return false;
+            dep.type = PluginDependency::Required;
         }
 
         this->dependencies.append(dep);

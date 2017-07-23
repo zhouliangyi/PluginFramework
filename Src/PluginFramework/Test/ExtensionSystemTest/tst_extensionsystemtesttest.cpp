@@ -16,6 +16,7 @@ public:
 private Q_SLOTS:
     void initTestCase();
     void cleanupTestCase();
+
     void testCase1();
 
     void test_Initialize();
@@ -33,6 +34,9 @@ private Q_SLOTS:
     // 依赖项
     void testPluginSpec_ResolveDepencies1();
     void testPluginSpec_ResolveDepencies2();
+
+    // 读取函数
+    void testPluginSpec_read();
 
 };
 
@@ -182,6 +186,14 @@ void ExtensionSystemTestTest::testPluginSpec_ResolveDepencies2()
     pluginSepcList.append(spec);
 
     QVERIFY(!pluginSepc.resolveDependencies(pluginSepcList));
+}
+
+void ExtensionSystemTestTest::testPluginSpec_read()
+{
+    ExtensionSystem::PluginSpec pluginSepc;
+    QString fileName("E:\\3!Programming\\PluginFrameworkGit\\Src\\PluginFramework\\Test\\ExtensionSystemTest\\AutoTest4.dll");
+    bool readResult = pluginSepc.read(fileName);
+    QVERIFY(readResult);
 }
 
 
