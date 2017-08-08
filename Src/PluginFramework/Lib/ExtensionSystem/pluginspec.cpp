@@ -170,7 +170,7 @@ bool ExtensionSystem::PluginSpec::loadLibrary()
    state = Loaded;
    plugin=pluginObj;
    plugin->setPluginSpec(this);
-
+   return true;
 }
 
 bool ExtensionSystem::PluginSpec::initializePlugin()
@@ -205,6 +205,32 @@ bool ExtensionSystem::PluginSpec::initializePlugin()
     }
     // 初始化成功 设置插件当前状态，返回true
     state = Initialized;
+    return true;
+}
+
+bool ExtensionSystem::PluginSpec::initializeExtensions()
+{
+    // 如果错误 则返回
+    if(hasError){
+        return false;
+    }
+    // 如果当前状态不是初始化状态，则返回
+    if(this->state != Initialized){
+        hasError = true;
+        return false;
+    }
+    // 如果插件的对象为空 则返回false
+    if(!plugin){
+        hasError=true;
+        return false;
+    }
+    // 扩展初始化失败
+    if(!plugin->initializeExtensions(this->arguments,this->errorString)){
+        hasError = true;
+        return false;
+    }
+    // 初始化成功
+    this->state = Running;
     return true;
 }
 

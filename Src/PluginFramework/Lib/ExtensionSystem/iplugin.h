@@ -15,6 +15,7 @@ public:
 
     virtual ~IPlugin();
     virtual bool initialize(const QStringList &arguments,QString &errorString);
+    virtual bool initializeExtensions(const QStringList &arguments,QString &errorString);
 
     //    virtual void extensionInitialized() = 0;
 
